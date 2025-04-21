@@ -6,7 +6,7 @@ import Jobs from './pages/Jobs';
 import Candidates from './pages/Candidates';
 import Login from './components/auth/Login';
 import Register from './components/auth/Register';
-import Dashboard from './components/dashboard/Dashboard';
+import Dashboard from './components/dashboard/DashBoard';
 import Layout from './components/Layout';
 
 // Protected Route Component
