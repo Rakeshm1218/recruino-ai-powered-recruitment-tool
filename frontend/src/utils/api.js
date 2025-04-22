@@ -3,7 +3,7 @@ import axios from "axios";
 
 
 const api = axios.create({
-  baseURL: "https://recruino-ai-powered-recruitment-tool-backend.vercel.app/",
+  baseURL: import.meta.env.VITE_API_URL,
 });
 
 // Add token to every request if available
