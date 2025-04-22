@@ -61,7 +61,7 @@ const CandidateList = ({ jobId }) => {
               <div className="flex space-x-2">
                 <button
                   onClick={() => handleDelete(candidate._id)}
-                  className="text-red-600 hover:text-red-800 text-sm font-medium"
+                  className="text-red-600 text-sm font-medium shadow my-auto px-6 py-2 rounded-md hover:bg-red-600 hover:text-white"
                 >
                   Delete
                 </button>

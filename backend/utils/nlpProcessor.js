@@ -29,14 +29,14 @@ class NLPProcessor {
     try {
       if (fileType === "application/pdf") {
         const data = await pdfParse(fileBuffer);
-        console.log("PDF Text Extracted:", data.text); // Log extracted PDF text
+        // console.log("PDF Text Extracted:", data.text); // Log extracted PDF text
         return data.text;
       } else if (
         fileType ===
         "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
       ) {
         const result = await mammoth.extractRawText({ buffer: fileBuffer });
-        console.log("DOCX Text Extracted:", result.value); // Log extracted DOCX text
+        // console.log("DOCX Text Extracted:", result.value); // Log extracted DOCX text
         return result.value;
       }
       return null;

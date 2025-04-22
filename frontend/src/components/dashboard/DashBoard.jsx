@@ -1,10 +1,11 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchJobs } from '../../store/slices/jobSlice';
 import { fetchAllCandidates } from '../../store/slices/candidateSlice';
 
 export default function Dashboard() {
   const dispatch = useDispatch();
+  const [selectedJobId, setSelectedJobId] = useState(null); // Track selected job
   
   const { 
     jobs, 
@@ -17,36 +18,41 @@ export default function Dashboard() {
     status: candidatesStatus, 
     error: candidatesError 
   } = useSelector((state) => state.candidates);
-  console.log(jobs,candidates)
+
   // Load data when component mounts
   useEffect(() => {
     const loadData = async () => {
       try {
-        // Always fetch jobs if not loading
         dispatch(fetchJobs());
-        // Always fetch candidates if not loading
         dispatch(fetchAllCandidates());
       } catch (error) {
         console.error("Failed to load data:", error);
       }
     };
     loadData();
-  }, [dispatch]); // Remove length dependencies
+  }, [dispatch]);
 
   // Calculate dashboard metrics
   const totalJobs = jobs?.length || 0;
   const totalCandidates = candidates?.length || 0;
   const avgMatchScore = candidates?.reduce((sum, c) => sum + (c.matchScore || 0), 0) / (totalCandidates || 1) || 0;
+  
+  // Candidates per job with click handler
   const candidatesPerJob = jobs?.map(job => ({
     jobId: job._id,
     jobTitle: job.title,
     count: candidates?.filter(c => c.job === job._id).length || 0
   })) || [];
-  
-  const topCandidates = [...candidates]
-  ?.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0))
-  ?.slice(0, 5) || [];
 
+  // Filter candidates based on selected job or show all
+  const filteredCandidates = selectedJobId
+    ? candidates?.filter(c => c.job === selectedJobId)
+    : candidates;
+
+  // Get top candidates (either for selected job or overall)
+  const topCandidates = [...(filteredCandidates || [])]
+    ?.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0))
+    ?.slice(0, 5) || [];
 
   // Loading state
   if (jobsStatus === 'loading' || candidatesStatus === 'loading') {
@@ -62,7 +68,7 @@ export default function Dashboard() {
     <div className="max-w-6xl mx-auto p-4 space-y-8">
       <h1 className="text-3xl font-bold text-gray-800">Recruiter Dashboard</h1>
       
-      {/* Only show error if we have no data */}
+      {/* Error display */}
       {(jobsError || candidatesError) && totalJobs === 0 && totalCandidates === 0 && (
         <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
           <div className="flex items-center">
@@ -94,15 +100,33 @@ export default function Dashboard() {
 
       {/* Candidates per Job */}
       <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Candidates per Job</h3>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="text-lg font-medium text-gray-900">Candidates per Job</h3>
+          {selectedJobId && (
+            <button 
+              onClick={() => setSelectedJobId(null)}
+              className="text-sm text-blue-600 hover:text-blue-800"
+            >
+              Show all candidates
+            </button>
+          )}
+        </div>
         {totalJobs === 0 ? (
           <p className="text-gray-500">No jobs available</p>
         ) : (
           <ul className="space-y-2">
             {candidatesPerJob.map((item) => (
-              <li key={item.jobId} className="flex justify-between">
-                <span>{item.jobTitle}</span>
-                <span className="font-medium">{item.count} candidates</span>
+              <li 
+                key={item.jobId} 
+                className="flex justify-between cursor-pointer hover:bg-gray-50 p-2 rounded"
+                onClick={() => setSelectedJobId(item.jobId)}
+              >
+                <span className={selectedJobId === item.jobId ? "font-semibold text-blue-600" : ""}>
+                  {item.jobTitle}
+                </span>
+                <span className={`font-medium ${selectedJobId === item.jobId ? "text-blue-600" : ""}`}>
+                  {item.count} candidates
+                </span>
               </li>
             ))}
           </ul>
@@ -111,7 +135,11 @@ export default function Dashboard() {
 
       {/* Top Candidates */}
       <div className="bg-white p-6 rounded-lg shadow">
-        <h3 className="text-lg font-medium text-gray-900 mb-4">Top Candidates</h3>
+        <h3 className="text-lg font-medium text-gray-900 mb-4">
+          {selectedJobId 
+            ? `Top Candidates for ${jobs.find(j => j._id === selectedJobId)?.title || 'Selected Job'}`
+            : 'Top Candidates Overall'}
+        </h3>
         {totalCandidates === 0 ? (
           <p className="text-gray-500">No candidates available</p>
         ) : (
@@ -120,7 +148,9 @@ export default function Dashboard() {
               <thead className="bg-gray-50">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job</th>
+                  {!selectedJobId && (
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job</th>
+                  )}
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Match Score</th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Skills</th>
                 </tr>
@@ -129,9 +159,11 @@ export default function Dashboard() {
                 {topCandidates.map((candidate) => (
                   <tr key={candidate._id}>
                     <td className="px-6 py-4 whitespace-nowrap">{candidate.name}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {jobs.find(j => j._id === candidate.job)?.title || 'Unknown'}
-                    </td>
+                    {!selectedJobId && (
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {jobs.find(j => j._id === candidate.job)?.title || 'Unknown'}
+                      </td>
+                    )}
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
                         candidate.matchScore > 75 ? 'bg-green-100 text-green-800' :

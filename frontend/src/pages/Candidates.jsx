@@ -49,7 +49,7 @@ const Candidates = () => {
           <button
             onClick={() => setShowUpload(true)}
             disabled={!selectedJobId || jobs.length === 0}
-            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 disabled:bg-gray-400"
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-gray-400"
           >
             Upload Resume
           </button>

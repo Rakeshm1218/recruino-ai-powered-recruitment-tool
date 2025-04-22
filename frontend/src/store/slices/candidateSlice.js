@@ -28,7 +28,7 @@ export const fetchAllCandidates = createAsyncThunk(
 export const uploadResume = createAsyncThunk(
   "candidates/uploadResume",
   async (formData, { rejectWithValue }) => {
-    console.log("upload resume is called");
+    // console.log("upload resume is called");
 
     try {
       const response = await api.post("/candidates/upload", formData, {
@@ -37,7 +37,7 @@ export const uploadResume = createAsyncThunk(
         },
       });
 
-      console.log("API Response: ", response);
+      // console.log("API Response: ", response);
       return response.data.data; // Return response data, assuming it has a 'data' field
     } catch (err) {
       console.error("Upload failed:", err);
