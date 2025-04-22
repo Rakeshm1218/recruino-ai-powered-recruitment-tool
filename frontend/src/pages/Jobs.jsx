@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import JobForm from "../components/jobs/JobForm";
 import JobList from "../components/jobs/JobList";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { fetchJobs } from "../store/slices/jobSlice";
 
 const Jobs = () => {
   const [showForm, setShowForm] = useState(false);
   const dispatch = useDispatch();
-  const { jobs, status, error } = useSelector((state) => state.jobs);
 
   useEffect(() => {
     dispatch(fetchJobs());
