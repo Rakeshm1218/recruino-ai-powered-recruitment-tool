@@ -32,29 +32,40 @@ export default function Dashboard() {
     loadData();
   }, [dispatch]);
 
-  // Calculate dashboard metrics only if jobs exist
-  const hasJobs = jobs?.length > 0;
-  const totalJobs = hasJobs ? jobs.length : 0;
-  const totalCandidates = candidates?.length || 0;
-  const avgMatchScore = hasJobs 
-    ? candidates?.reduce((sum, c) => sum + (c.matchScore || 0), 0) / (totalCandidates || 1) || 0
+  // Filter candidates with valid job references (job exists in jobs array)
+  const knownCandidates = candidates?.filter(candidate => {
+    // Check if candidate has a job reference that exists in the jobs array
+    return jobs.some(job => job._id === candidate.job);
+  }) || [];
+
+  // Get job IDs from known candidates
+  const candidateJobIds = [...new Set(knownCandidates.map(c => c.job))];
+  
+  // Filter jobs to only those that have candidates
+  const jobsWithCandidates = jobs?.filter(job => 
+    candidateJobIds.includes(job._id)
+  ) || [];
+
+  const hasJobs = jobsWithCandidates.length > 0;
+  const totalJobs = hasJobs ? jobsWithCandidates.length : 0;
+  const totalCandidates = knownCandidates.length;
+  const avgMatchScore = totalCandidates > 0 
+    ? knownCandidates.reduce((sum, c) => sum + (c.matchScore || 0), 0) / totalCandidates
     : 0;
 
-  const candidatesPerJob = hasJobs 
-    ? jobs.map(job => ({
-        jobId: job._id,
-        jobTitle: job.title,
-        count: candidates?.filter(c => c.job === job._id).length || 0
-      }))
-    : [];
+  const candidatesPerJob = jobsWithCandidates.map(job => ({
+    jobId: job._id,
+    jobTitle: job.title,
+    count: knownCandidates.filter(c => c.job === job._id).length
+  }));
 
   const filteredCandidates = selectedJobId
-    ? candidates?.filter(c => c.job === selectedJobId)
-    : candidates;
+    ? knownCandidates.filter(c => c.job === selectedJobId)
+    : knownCandidates;
 
-  const topCandidates = [...(filteredCandidates || [])]
-    ?.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0))
-    ?.slice(0, 5) || [];
+  const topCandidates = [...filteredCandidates]
+    .sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0))
+    .slice(0, 5);
 
   if (jobsStatus === 'loading' || candidatesStatus === 'loading') {
     return (

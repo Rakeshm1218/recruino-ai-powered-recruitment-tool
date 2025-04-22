@@ -143,11 +143,13 @@ export default function JobList() {
                     <p className="text-sm text-gray-500">{job.description}</p>
                     <div className="mt-2">
                       <span className="text-xs font-medium text-gray-500">Skills: </span>
+                      <div className=' flex flex-wrap w-3/4 gap-2 mt-2'>
                       {job.skills?.map((skill, i) => (
                         <span key={i} className="inline-block bg-gray-100 rounded-full px-2 py-1 text-xs font-semibold text-gray-700 mr-1">
                           {skill}
                         </span>
                       ))}
+                      </div>
                     </div>
                   </div>
                   {/* small screen edit and delete function  */}
