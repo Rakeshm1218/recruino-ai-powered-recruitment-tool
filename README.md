@@ -6,6 +6,8 @@ This is a full-stack web application designed to help recruiters manage job post
 
 **Note:** While this project was built primarily with my own code, I used AI assistance for:
 
+- DeepSeek(AI Used).
+
 - NLP processing implementation
 - Basic page templates (sign-in, login)
 - Some reusable UI components
