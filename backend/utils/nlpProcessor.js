@@ -3,6 +3,7 @@ const natural = require("natural");
 const stopword = require("stopword");
 const pdfParse = require("pdf-parse");
 const mammoth = require("mammoth");
+const Tesseract = require("tesseract.js");
 
 class NLPProcessor {
   constructor() {
@@ -38,6 +39,9 @@ class NLPProcessor {
         const result = await mammoth.extractRawText({ buffer: fileBuffer });
         // console.log("DOCX Text Extracted:", result.value); // Log extracted DOCX text
         return result.value;
+      } else if (fileType && fileType.startsWith("image/")) {
+        const { data } = await Tesseract.recognize(fileBuffer, "eng");
+        return data?.text || null;
       }
       return null;
     } catch (error) {
